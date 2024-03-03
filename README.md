@@ -1,4 +1,4 @@
-# Calculator Project with JavaScript Tutorial
+# Calculator Project with JavaScript
 
 This tutorial guides you through building a sleek calculator using vanilla HTML, CSS, and JavaScript. It's an ideal project for honing your logical programming skills and showcasing them in your portfolio. We'll leverage various JavaScript methods and functions to create an impressive calculator, with detailed explanations provided for every step from HTML syntax to modern styling, including hover effects and intricate logical functions.
 
@@ -26,11 +26,8 @@ Throughout this tutorial, you'll gain insights into various JavaScript logic con
 ## Tools Used
 
 - **GitHub:** [GitHub](https://github.com/)
-- **GitHub Desktop:** [GitHub Desktop](https://desktop.github.com/)
 - **VS Code:** [Visual Studio Code](https://code.visualstudio.com/)
 - **GitHub Pages:** [GitHub Pages](https://pages.github.com/)
 - **JavaScript Reference:** [MDN Web Docs](https://developer.mozilla.org/)
-
-This project not only enhances your JavaScript skills but also offers a valuable addition to your portfolio. Dive in and start building your own sleek calculator today!
 
 Feel free to contribute to this project or provide feedback.
