@@ -7,15 +7,12 @@ const resultDiv = document.getElementById('result');
 let expression = '';
 let result = '';
 
-// Define event handler for button clicks
+// Event handler for button clicks
 function buttonClick(event) {
-  // Get values from clicked button
   const target = event.target;
   const action = target.dataset.action;
   const value = target.dataset.value;
-  //   console.log(target, action, value);
 
-  // Switch case to control the calculator
   switch (action) {
     case 'number':
       addValue(value);
@@ -26,16 +23,11 @@ function buttonClick(event) {
     case 'backspace':
       backspace();
       break;
-    // Add the result to expression as a starting point if expression is empty
     case 'addition':
     case 'subtraction':
     case 'multiplication':
     case 'division':
-      if (expression === '' && result !== '') {
-        startFromResult(value);
-      } else if (expression !== '' && !isLastCharOperator()) {
-        addValue(value);
-      }
+      handleOperator(value);
       break;
     case 'submit':
       submit();
@@ -49,94 +41,179 @@ function buttonClick(event) {
     case 'decimal':
       decimal(value);
       break;
+    case 'sqrt':
+      sqrt();
+      break;
+    case 'power':
+      power();
+      break;
   }
-
-  // Update display
   updateDisplay(expression, result);
 }
 
-inputBox.addEventListener('click', buttonClick);
+// Event handler for keyboard input
+function handleKeyPress(event) {
+  const key = event.key;
+  if (!isNaN(key)) {
+    addValue(key);
+  } else {
+    handleKeyOperator(key);
+  }
+  updateDisplay(expression, result);
+}
 
+function handleKeyOperator(key) {
+  switch (key) {
+    case '+':
+    case '-':
+    case '*':
+    case '/':
+      addValue(key);
+      break;
+    case 'Enter':
+      submit();
+      break;
+    case 'Backspace':
+      backspace();
+      break;
+    case 'Escape':
+      clear();
+      break;
+    case '.':
+      decimal('.');
+      break;
+    case '%':
+      percentage();
+      break;
+    case '^':
+      power();
+      break;
+    case '√':
+      sqrt();
+      break;
+    case 'n':
+      negate();
+      break;
+  }
+}
+
+// Add value to the expression
 function addValue(value) {
   if (value === '.') {
-    // Find the index of the last operator in the expression
-    const lastOperatorIndex = expression.search(/[+\-*/]/);
-    // Find the index of the last decimal in the expression
-    const lastDecimalIndex = expression.lastIndexOf('.');
-    // Find the index of the last number in the expression
-    const lastNumberIndex = Math.max(
-      expression.lastIndexOf('+'),
-      expression.lastIndexOf('-'),
-      expression.lastIndexOf('*'),
-      expression.lastIndexOf('/')
-    );
-    // Check if this is the first decimal in the current number or if the expression is empty
-    if (
-      (lastDecimalIndex < lastOperatorIndex ||
-        lastDecimalIndex < lastNumberIndex ||
-        lastDecimalIndex === -1) &&
-      (expression === '' ||
-        expression.slice(lastNumberIndex + 1).indexOf('-') === -1)
-    ) {
-      expression += value;
-    }
+    addDecimal(value);
   } else {
     expression += value;
   }
 }
 
-function updateDisplay(expression, result) {
-  expressionDiv.textContent = expression;
-  resultDiv.textContent = result;
+// Add decimal point to the expression
+function addDecimal(value) {
+  const lastOperatorIndex = expression.search(/[+\-*/]/);
+  const lastDecimalIndex = expression.lastIndexOf('.');
+  const lastNumberIndex = Math.max(
+    expression.lastIndexOf('+'),
+    expression.lastIndexOf('-'),
+    expression.lastIndexOf('*'),
+    expression.lastIndexOf('/')
+  );
+
+  if (
+    (lastDecimalIndex < lastOperatorIndex ||
+      lastDecimalIndex < lastNumberIndex ||
+      lastDecimalIndex === -1) &&
+    (expression === '' ||
+      expression.slice(lastNumberIndex + 1).indexOf('-') === -1)
+  ) {
+    expression += value;
+  }
 }
 
+// Update the display with the current expression and result
+function updateDisplay(expression, result) {
+  expressionDiv.textContent = expression || '0';
+  resultDiv.textContent = result || 'Result';
+
+  togglePlaceholder(expressionDiv, expression);
+  togglePlaceholder(resultDiv, result);
+
+  restartAnimation(expressionDiv);
+  restartAnimation(resultDiv);
+}
+
+// Toggle placeholder class based on content
+function togglePlaceholder(element, content) {
+  if (content) {
+    element.classList.remove('placeholder');
+  } else {
+    element.classList.add('placeholder');
+  }
+}
+
+// Restart animation for the given element
+function restartAnimation(element) {
+  element.classList.remove('animate');
+  void element.offsetWidth;
+  element.classList.add('animate');
+}
+
+// Clear the expression and result
 function clear() {
   expression = '';
   result = '';
+  updateDisplay(expression, result);
 }
 
+// Remove the last character from the expression
 function backspace() {
   expression = expression.slice(0, -1);
+  updateDisplay(expression, result);
 }
 
+// Check if the last character in the expression is an operator
 function isLastCharOperator() {
   return isNaN(parseInt(expression.slice(-1)));
 }
 
+// Start a new expression from the result
 function startFromResult(value) {
   expression += result + value;
 }
 
+// Submit the current expression for evaluation
 function submit() {
   result = evaluateExpression();
   expression = '';
+  updateDisplay(expression, result);
 }
 
+// Evaluate the current expression
 function evaluateExpression() {
-  const evalResult = eval(expression);
-  // checks if evalResult isNaN or infinite. It if is, return a space character ' '
-  return isNaN(evalResult) || !isFinite(evalResult)
-    ? ' '
-    : evalResult < 1
-    ? parseFloat(evalResult.toFixed(10))
-    : parseFloat(evalResult.toFixed(2));
-}
-
-function negate() {
-  // Negate the result if expression is empty and result is present
-  if (expression === '' && result !== '') {
-    result = -result;
-    // Toggle the sign of the expression if its not already negatvie and its not empty
-  } else if (!expression.startsWith('-') && expression !== '') {
-    expression = '-' + expression;
-    // Remove the negatvie sign from the expression if its already negative.
-  } else if (expression.startsWith('-')) {
-    expression = expression.slice(1);
+  try {
+    const evalResult = eval(expression.replace(/\*\*/g, '**'));
+    return isNaN(evalResult) || !isFinite(evalResult)
+      ? ' '
+      : evalResult < 1
+      ? parseFloat(evalResult.toFixed(10))
+      : parseFloat(evalResult.toFixed(2));
+  } catch (e) {
+    return 'Error';
   }
 }
 
+// Negate the current expression or result
+function negate() {
+  if (expression === '' && result !== '') {
+    result = -result;
+  } else if (!expression.startsWith('-') && expression !== '') {
+    expression = '-' + expression;
+  } else if (expression.startsWith('-')) {
+    expression = expression.slice(1);
+  }
+  updateDisplay(expression, result);
+}
+
+// Convert the current expression or result to a percentage
 function percentage() {
-  // Evaluate the expression, else it will take the percentage of only the first number
   if (expression !== '') {
     result = evaluateExpression();
     expression = '';
@@ -146,13 +223,37 @@ function percentage() {
       result = '';
     }
   } else if (result !== '') {
-    // If expression is empty but the result exisits, divide by 100
     result = parseFloat(result) / 100;
   }
+  updateDisplay(expression, result);
 }
 
+// Add a decimal point to the expression
 function decimal(value) {
   if (!expression.endsWith('.') && !isNaN(expression.slice(-1))) {
     addValue(value);
   }
+  updateDisplay(expression, result);
 }
+
+// Calculate the square root of the current expression or result
+function sqrt() {
+  if (expression !== '') {
+    result = Math.sqrt(evaluateExpression());
+    expression = '';
+  } else if (result !== '') {
+    result = Math.sqrt(result);
+  }
+  updateDisplay(expression, result);
+}
+
+// Raise the current expression to a power
+function power() {
+  if (expression !== '' && !isLastCharOperator()) {
+    expression += '**';
+  }
+}
+
+// Add event listeners
+inputBox.addEventListener('click', buttonClick);
+document.addEventListener('keydown', handleKeyPress);

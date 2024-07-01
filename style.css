@@ -1,40 +1,75 @@
+/* General body styles */
 body {
   height: 100vh;
   margin: 0;
   display: flex;
   flex-direction: column;
-  font-family: sans-serif;
-  background-color: black;
+  font-family: 'Roboto', sans-serif;
+  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
   color: white;
 }
 
+/* Section styles */
 section {
   display: flex;
   flex-wrap: wrap;
   flex: 1;
   padding: 10px;
-  font-size: 40px;
+  font-size: 4vh; /* Adjust font size based on viewport height */
   font-weight: 300;
 }
 
+/* Output container styles */
 #output {
   flex-direction: column;
   justify-content: flex-end;
   align-items: flex-end;
-  gap: 15px;
+  gap: 1vh; /* Adjust gap based on viewport height */
+  padding: 2vh; /* Adjust padding based on viewport height */
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 1vh; /* Adjust border-radius based on viewport height */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.5s ease-in-out; /* Add fade-in animation */
 }
 
+/* Expression and result animations */
+#expression, #result {
+  animation: slideIn 0.5s ease-in-out, introAnimation 0.5s ease-in-out; /* Add slide-in and intro animations */
+}
+
+/* Placeholder text style */
+.placeholder {
+  color: rgba(255, 255, 255, 0.5); /* Lighter color for placeholder text */
+}
+
+/* Input grid styles */
+#input {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1vh; /* Adjust gap based on viewport height */
+  padding: 1vh; /* Add padding for better spacing */
+}
+
+/* Button styles */
 .btn {
-  flex-basis: calc(25% - 10px);
-  margin: 5px;
-  font-size: 32px;
-  height: 72px;
+  font-size: 3vh; /* Adjust font size based on viewport height */
+  height: 10vh; /* Adjust height based on viewport height */
   border: 0;
-  border-radius: 24px;
+  border-radius: 2vh; /* Adjust border-radius based on viewport height */
   cursor: pointer;
   color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+  grid-column: span 1; /* Ensure each button spans one column */
 }
 
+/* Button active state */
+.btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Light button styles */
 .light,
 .light:focus {
   background-color: #4e505f;
@@ -44,6 +79,7 @@ section {
   background-color: #8890a5;
 }
 
+/* Blue button styles */
 .blue,
 .blue:focus {
   background-color: #4b5efc;
@@ -53,6 +89,7 @@ section {
   background-color: #798bf9;
 }
 
+/* Dark button styles */
 .dark,
 .dark:focus {
   background-color: #2e2f38;
@@ -60,4 +97,53 @@ section {
 
 .dark:hover {
   background-color: #505266;
+}
+
+/* New button styles */
+.btn.sqrt {
+  background-color: #ff5722;
+}
+
+.btn.sqrt:hover {
+  background-color: #ff8a50;
+}
+
+.btn.power {
+  background-color: #9c27b0;
+}
+
+.btn.power:hover {
+  background-color: #ba68c8;
+}
+
+/* Keyframes for animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes introAnimation {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
