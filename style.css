@@ -1,149 +1,272 @@
-/* General body styles */
+/* Variables */
+:root {
+  --bg-color: #000000;
+  --text-color: #ffffff;
+  --btn-bg-light: #d0d0d0;
+  --btn-bg-blue: #4b5efc;
+  --btn-bg-dark: #2e2f38;
+  --btn-bg-function: #a3a3a3;
+  --input-bg: #1c1c1c;
+  --btn-bg-scientific: #ff8c00;
+}
+
+/* Light Theme */
+body.light-theme {
+  --bg-color: #f0f0f0;
+  --text-color: #333333;
+  --btn-bg-light: #e0e0e0;
+  --btn-bg-blue: #4b5efc;
+  --btn-bg-dark: #b0b0b0;
+  --btn-bg-function: #f1f1f1;
+  --input-bg: #e0e0e0;
+  --btn-bg-scientific: #ff9e2c;
+}
+
+/* Base Styles */
 body {
   height: 100vh;
   margin: 0;
   display: flex;
   flex-direction: column;
-  font-family: 'Roboto', sans-serif;
-  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Section styles */
+/* Layout */
+main {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 section {
   display: flex;
   flex-wrap: wrap;
   flex: 1;
   padding: 10px;
-  font-size: 4vh; /* Adjust font size based on viewport height */
+  font-size: clamp(24px, 5vw, 40px);
   font-weight: 300;
 }
 
-/* Output container styles */
+/* Output Section */
 #output {
+  display: flex;
   flex-direction: column;
   justify-content: flex-end;
   align-items: flex-end;
-  gap: 1vh; /* Adjust gap based on viewport height */
-  padding: 2vh; /* Adjust padding based on viewport height */
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 1vh; /* Adjust border-radius based on viewport height */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  animation: fadeIn 0.5s ease-in-out; /* Add fade-in animation */
+  gap: 15px;
+  position: relative;
+  height: 150px;
+  overflow: hidden;
 }
 
-/* Expression and result animations */
-#expression, #result {
-  animation: slideIn 0.5s ease-in-out, introAnimation 0.5s ease-in-out; /* Add slide-in and intro animations */
+#history {
+  display: flex;
+  flex-direction: column-reverse;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 70px;
+  overflow-y: auto;
+  padding-top: 10px;
 }
 
-/* Placeholder text style */
-.placeholder {
-  color: rgba(255, 255, 255, 0.5); /* Lighter color for placeholder text */
+#current {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
-/* Input grid styles */
+.row {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
 #input {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1vh; /* Adjust gap based on viewport height */
-  padding: 1vh; /* Add padding for better spacing */
+  background-color: var(--input-bg);
+  border-radius: 20px 20px 0 0;
+  padding: 20px;
+  margin-top: 10px;
+  transition: background-color 0.3s ease;
 }
 
-/* Button styles */
+/* Typography */
+.history-item {
+  text-align: right;
+  font-size: clamp(14px, 3vw, 18px);
+  color: #8e8e8e;
+  opacity: 1;
+  margin-bottom: 10px;
+  transition: all 0.5s ease, color 0.3s ease;
+}
+
+#expression {
+  text-align: right;
+  font-size: clamp(24px, 4vw, 32px);
+  color: var(--text-color);
+  min-height: 30px;
+  position: relative;
+  vertical-align: middle;
+  transition: all 0.5s ease, color 0.3s ease;
+}
+
+#expression::after {
+  content: '|';
+  animation: blink 1s step-end infinite;
+  display: inline-block;
+  margin-left: 2px;
+  vertical-align: middle;
+  margin-top: -10px;
+}
+
+#expression.has-content::after {
+  display: none;
+}
+
+#result {
+  font-size: clamp(32px, 6vw, 48px);
+  font-weight: bold;
+  opacity: 0;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  transform: translateY(100%);
+  transition: all 0.5s ease;
+  margin-top: 10px;
+}
+
+/* Buttons */
 .btn {
-  font-size: 3vh; /* Adjust font size based on viewport height */
-  height: 10vh; /* Adjust height based on viewport height */
+  flex-basis: calc(25% - 10px);
+  margin: 5px;
+  font-size: clamp(18px, 4vw, 32px);
+  height: 72px;
   border: 0;
-  border-radius: 2vh; /* Adjust border-radius based on viewport height */
+  border-radius: 24px;
   cursor: pointer;
-  color: white;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
-  grid-column: span 1; /* Ensure each button spans one column */
+  color: var(--text-color);
+  transition: background-color 0.3s ease, transform 0.2s ease, color 0.3s ease, filter 0.3s ease;
 }
 
-/* Button active state */
 .btn:active {
   transform: scale(0.95);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Light button styles */
-.light,
-.light:focus {
-  background-color: #4e505f;
+.btn:hover {
+  filter: brightness(120%);
 }
 
-.light:hover {
-  background-color: #8890a5;
+.btn:focus {
+  outline: 2px solid var(--btn-bg-blue);
+  outline-offset: 2px;
 }
 
-/* Blue button styles */
-.blue,
-.blue:focus {
-  background-color: #4b5efc;
+.btn.light {
+  background-color: var(--btn-bg-light);
 }
 
-.blue:hover {
-  background-color: #798bf9;
+.btn.blue {
+  background-color: var(--btn-bg-blue);
 }
 
-/* Dark button styles */
-.dark,
-.dark:focus {
-  background-color: #2e2f38;
+.btn.dark {
+  background-color: var(--btn-bg-dark);
 }
 
-.dark:hover {
-  background-color: #505266;
+.btn.function,
+.btn.operator {
+  background-color: var(--btn-bg-function);
 }
 
-/* New button styles */
-.btn.sqrt {
-  background-color: #ff5722;
+/* Scientific Buttons */
+.btn.function[data-action="sin"],
+.btn.function[data-action="cos"],
+.btn.function[data-action="tan"],
+.btn.function[data-action="ln"],
+.btn.function[data-action="log"],
+.btn.function[data-action="e"],
+.btn.function[data-action="pi"],
+.btn.function[data-action="inv"],
+.btn.function[data-action="deg"] {
+  background-color: var(--btn-bg-scientific);
+  color: #ffffff;
 }
 
-.btn.sqrt:hover {
-  background-color: #ff8a50;
+/* Theme Toggle */
+#theme-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 40px;
+  cursor: pointer;
+  color: var(--btn-bg-blue);
+  z-index: 100;
+  transition: color 0.3s ease;
 }
 
-.btn.power {
-  background-color: #9c27b0;
+#theme-toggle:hover {
+  color: #7b8eff;
 }
 
-.btn.power:hover {
-  background-color: #ba68c8;
+#theme-toggle:focus {
+  outline: 2px solid var(--btn-bg-blue);
+  outline-offset: 2px;
 }
 
-/* Keyframes for animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+/* Scientific Buttons Layout */
+#scientific-buttons {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#toggle-scientific {
+  display: none;
+}
+
+/* Animations */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #scientific-buttons {
+    display: none;
   }
-  to {
-    opacity: 1;
+
+  #scientific-buttons.visible {
+    display: flex;
+  }
+
+  #toggle-scientific {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
   }
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
+@media (max-width: 480px) {
+  .btn {
+    height: 60px;
   }
-  to {
-    transform: translateY(0);
-    opacity: 1;
+
+  #output {
+    height: 120px;
   }
 }
 
-@keyframes introAnimation {
-  from {
-    transform: scale(0.5);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
   }
 }
