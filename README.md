@@ -4,12 +4,22 @@ This tutorial guides you through building a sleek calculator using vanilla HTML,
 
 ## Features
 
+- Scientific calculator functionality including trigonometric functions, logarithms, and constants (π, e).
+- Dark and light theme toggle.
+- Responsive design for various screen sizes.
+- Keyboard support for input.
 - Addition, subtraction, multiplication, and division operations.
 - Clear functionality to reset the calculator.
 - Ability to delete the last character in the expression.
 - Support for decimal numbers.
 - Percentage calculations.
 - Toggle between positive and negative numbers.
+
+## Accessibility
+
+- ARIA labels for improved screen reader support.
+- Keyboard navigation friendly.
+- High contrast theme options.
 
 ## Learning Highlights
 
@@ -29,5 +39,3 @@ Throughout this tutorial, you'll gain insights into various JavaScript logic con
 - **VS Code:** [Visual Studio Code](https://code.visualstudio.com/)
 - **GitHub Pages:** [GitHub Pages](https://pages.github.com/)
 - **JavaScript Reference:** [MDN Web Docs](https://developer.mozilla.org/)
-
-Feel free to contribute to this project or provide feedback.

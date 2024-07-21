@@ -1,239 +1,165 @@
 // DOM elements
-const inputBox = document.getElementById('input');
-const expressionDiv = document.getElementById('expression');
-const resultDiv = document.getElementById('result');
-const historyDiv = document.getElementById('history');
-const themeToggle = document.getElementById('theme-toggle');
-const body = document.body;
-const toggleScientificBtn = document.getElementById('toggle-scientific');
-const scientificButtons = document.getElementById('scientific-buttons');
+const elements = {
+  inputBox: document.getElementById('input'),
+  expressionDiv: document.getElementById('expression'),
+  resultDiv: document.getElementById('result'),
+  themeToggle: document.getElementById('theme-toggle'),
+  body: document.body,
+  toggleScientificBtn: document.getElementById('toggle-scientific'),
+  scientificButtons: document.getElementById('scientific-buttons')
+};
 
-// Global variables
-let expression = '';
-let result = '';
-let typingTimeout;
-const MAX_HISTORY_ITEMS = 5;
-let openParentheses = 0;
-let isDegree = true;
-let isInverse = false;
+// Global state
+const state = {
+  expression: '',
+  result: '',
+  openParentheses: 0,
+  isDegree: true,
+  isInverse: false
+};
 
 // Event listeners
-inputBox.addEventListener('click', buttonClick);
+document.addEventListener('DOMContentLoaded', initializeCalculator);
+elements.inputBox.addEventListener('click', buttonClick);
 document.addEventListener('keydown', handleKeyPress);
-themeToggle.addEventListener('click', toggleTheme);
-themeToggle.addEventListener('touchstart', function(e) {
-  e.preventDefault(); // Prevent default touch behavior
+elements.themeToggle.addEventListener('click', toggleTheme);
+elements.themeToggle.addEventListener('touchstart', (e) => {
+  e.preventDefault();
   toggleTheme();
 });
-toggleScientificBtn.addEventListener('click', toggleScientific);
+elements.toggleScientificBtn.addEventListener('click', toggleScientific);
 
 // Main functions
 function buttonClick(event) {
-  const target = event.target;
-  const action = target.dataset.action;
-  const value = target.dataset.value;
-  clearTimeout(typingTimeout);
+  const { action, value } = event.target.dataset;
+  const actions = {
+    number: () => addValue(value),
+    decimal: () => addValue(value),
+    operator: () => addValue(value),
+    clear: () => { clear(); updateClearButton(); },
+    backspace: () => { backspace(); updateButtonIcon('backspace', 'delete-left'); },
+    submit,
+    negate: () => { negate(); updateButtonIcon('negate', 'plus-minus'); },
+    mod: () => { percentage(); updateButtonIcon('mod', 'percent'); },
+    pi: () => { addPi(); updateButtonIcon('pi', 'p'); },
+    sqrt: () => { addSqrt(); updateButtonIcon('sqrt', 'square-root-variable'); },
+    factorial: () => { addFactorial(); updateButtonIcon('factorial', 'exclamation'); },
+    parenthesis: addParenthesis,
+    deg: toggleDegRad,
+    trigonometry: () => trigonometry(action),
+    inv: toggleInverse,
+    e: () => addValue(Math.E.toFixed(10)),
+    ln: () => addFunction(state.isInverse ? 'Math.exp' : 'Math.log'),
+    log: () => addFunction(state.isInverse ? 'Math.pow(10,' : 'Math.log10')
+  };
 
-  switch (action) {
-    case 'number':
-    case 'decimal':
-    case 'addition':
-    case 'subtraction':
-    case 'multiplication':
-    case 'division':
-    case 'exponent':
-      addValue(value);
-      break;
-    case 'clear':
-      clear();
-      break;
-    case 'backspace':
-      backspace();
-      break;
-    case 'submit':
-      submit();
-      break;
-    case 'negate':
-      negate();
-      break;
-    case 'mod':
-      percentage();
-      break;
-    case 'pi':
-      addPi();
-      break;
-    case 'sqrt':
-      addSqrt();
-      break;
-    case 'factorial':
-      addFactorial();
-      break;
-    case 'parenthesis':
-      addParenthesis();
-      break;
-    case 'deg':
-      toggleDegRad();
-      break;
-    case 'sin':
-    case 'cos':
-    case 'tan':
-      trigonometry(action);
-      break;
-    case 'inv':
-      toggleInverse();
-      break;
-    case 'e':
-      addValue(Math.E.toFixed(10));
-      break;
-    case 'ln':
-      addFunction(isInverse ? 'Math.exp' : 'Math.log');
-      break;
-    case 'log':
-      addFunction(isInverse ? 'Math.pow(10,' : 'Math.log10');
-      break;
-  }
-
-  updateDisplay(expression, '');
+  (actions[action] || actions[getActionType(action)])?.();
+  updateDisplay();
+  updateClearButton();
 }
 
-function updateDisplay(expression, result) {
-  if (expression === '' && result === '') {
-    expressionDiv.textContent = '0';
-    expressionDiv.classList.remove('has-content');
-  } else {
-    expressionDiv.textContent = expression;
-    expressionDiv.classList.add('has-content');
-  }
-  resultDiv.textContent = result;
-  
-  if (result) {
-    expressionDiv.style.opacity = '0.5';
-    expressionDiv.style.transform = 'translateY(-100%)';
-    resultDiv.style.opacity = '1';
-    resultDiv.style.transform = 'translateY(0)';
-  } else {
-    expressionDiv.style.opacity = '1';
-    expressionDiv.style.transform = 'translateY(0)';
-    resultDiv.style.opacity = '0';
-    resultDiv.style.transform = 'translateY(100%)';
-  }
+function getActionType(action) {
+  return ['addition', 'subtraction', 'multiplication', 'division', 'exponent'].includes(action) ? 'operator' : action;
+}
+
+function updateDisplay() {
+  elements.expressionDiv.textContent = state.expression || '0';
+  elements.expressionDiv.classList.toggle('has-content', state.expression !== '');
+  elements.resultDiv.textContent = state.result;
+
+  const hasResult = Boolean(state.result);
+  elements.expressionDiv.style.opacity = hasResult ? '0.5' : '1';
+  elements.expressionDiv.style.transform = hasResult ? 'translateY(-100%)' : 'translateY(0)';
+  elements.resultDiv.style.opacity = hasResult ? '1' : '0';
+  elements.resultDiv.style.transform = hasResult ? 'translateY(0)' : 'translateY(100%)';
 }
 
 function submit() {
-  clearTimeout(typingTimeout);
-  
   while (needsClosingParenthesis()) {
-    expression += ')';
-    openParentheses--;
+    state.expression += ')';
+    state.openParentheses--;
   }
   
-  result = evaluateExpression();
+  state.result = evaluateExpression();
   
   animateTransition();
   
-  setTimeout(updateHistory, 250);
-
   setTimeout(() => {
-    if (result !== 'Error') {
-      expression = '';
+    if (state.result !== 'Error') {
+      state.expression = '';
     }
-    updateDisplay(expression, result);
+    updateDisplay();
   }, 1000);
 }
 
 // Helper functions
-function getMaxHistoryItems() {
-  const historyItemHeight = 28;
-  const historyDivHeight = historyDiv.clientHeight;
-  return Math.floor(historyDivHeight / historyItemHeight);
-}
-
 function animateTransition() {
-  expressionDiv.style.transition = 'all 0.5s ease';
-  resultDiv.style.transition = 'all 0.5s ease';
-  expressionDiv.style.opacity = '0';
-  expressionDiv.style.transform = 'translateY(-100%)';
+  elements.expressionDiv.style.transition = elements.resultDiv.style.transition = 'all 0.5s ease';
+  elements.expressionDiv.style.opacity = '0';
+  elements.expressionDiv.style.transform = 'translateY(-100%)';
 }
 
-function updateHistory() {
-  const historyItem = document.createElement('div');
-  historyItem.classList.add('history-item');
-  historyItem.textContent = `${expression} = ${result}`;
-  historyDiv.appendChild(historyItem);
-  
-  expressionDiv.textContent = '';
-  resultDiv.textContent = result;
-  resultDiv.style.opacity = '1';
-  resultDiv.style.transform = 'translateY(0)';
-  
-  const historyItems = historyDiv.querySelectorAll('.history-item');
-  const maxHistoryItems = getMaxHistoryItems();
-  historyItems.forEach((item, index) => {
-    item.style.transition = 'all 0.5s ease';
-    item.style.opacity = Math.max(0, 1 - (index / maxHistoryItems));
-  });
-
-  while (historyItems.length > maxHistoryItems) {
-    historyDiv.removeChild(historyItems[0]);
-  }
-}
-
+// Basic calculator functions
 function addValue(value) {
-  if (expression === '0') {
-    expression = value;
-  } else {
-    // Always add the value, don't auto-close parentheses
-    expression += value;
-  }
-  updateDisplay(expression, '');
-  document.querySelector('button[data-action="clear"]').textContent = 'C';
+  state.expression = state.expression === '0' ? value : state.expression + value;
+  updateDisplay();
+  updateClearButton();
 }
 
 function clear() {
-  if (expression !== '' || result !== '') {
-    expression = '';
-    result = '';
-    openParentheses = 0;
-    updateDisplay(expression, result);
-    document.querySelector('button[data-action="clear"]').textContent = 'AC';
-  } else {
-    historyDiv.innerHTML = '';
-  }
+  state.expression = state.result = '';
+  state.openParentheses = 0;
+  updateDisplay();
+  updateClearButton();
 }
 
 function backspace() {
-  expression = expression.slice(0, -1);
-  updateDisplay(expression, '');
+  state.expression = state.expression.slice(0, -1);
+  updateDisplay();
 }
 
-function isLastCharOperator() {
-  return isNaN(parseInt(expression.slice(-1)));
+function negate() {
+  if (!state.expression && state.result) {
+    state.result = -state.result;
+  } else if (state.expression) {
+    state.expression = state.expression.startsWith('-') ? state.expression.slice(1) : '-' + state.expression;
+  }
+  updateDisplay();
 }
 
-function startFromResult(value) {
-  expression += result + value;
+function percentage() {
+  if (state.expression) {
+    state.result = evaluateExpression();
+    state.expression = '';
+    state.result = !isNaN(state.result) && isFinite(state.result) ? state.result / 100 : '';
+  } else if (state.result) {
+    state.result = parseFloat(state.result) / 100;
+  }
+  updateDisplay();
 }
 
+// Evaluation functions
 function evaluateExpression() {
   try {
-    let sanitizedExpression = expression.replace(/\^/g, '**');
-    sanitizedExpression = sanitizedExpression.replace(/√(\d+(\.\d+)?)/g, 'Math.sqrt($1)');
-    sanitizedExpression = sanitizedExpression.replace(/√/g, 'Math.sqrt(');
-    sanitizedExpression = sanitizedExpression.replace(/π/g, Math.PI.toFixed(10));
-    sanitizedExpression = sanitizedExpression.replace(/(\d+)!/g, (match, number) => {
-      return factorial(parseInt(number));
-    });
+    let sanitizedExpression = state.expression
+      .replace(/\^/g, '**')
+      .replace(/√(\d+(\.\d+)?)/g, 'Math.sqrt($1)')
+      .replace(/√/g, 'Math.sqrt(')
+      .replace(/π/g, Math.PI.toFixed(10))
+      .replace(/(\d+)!/g, (_, n) => factorial(parseInt(n)));
     
-    let openParens = (sanitizedExpression.match(/\(/g) || []).length;
-    let closeParens = (sanitizedExpression.match(/\)/g) || []).length;
+    const openParens = (sanitizedExpression.match(/\(/g) || []).length;
+    const closeParens = (sanitizedExpression.match(/\)/g) || []).length;
     sanitizedExpression += ')'.repeat(openParens - closeParens);
     
-    sanitizedExpression = sanitizedExpression.replace(/Math.sin\(/g, `Math.sin(${isDegree ? 'Math.PI / 180 * ' : ''}`);
-    sanitizedExpression = sanitizedExpression.replace(/Math.cos\(/g, `Math.cos(${isDegree ? 'Math.PI / 180 * ' : ''}`);
-    sanitizedExpression = sanitizedExpression.replace(/Math.tan\(/g, `Math.tan(${isDegree ? 'Math.PI / 180 * ' : ''}`);
-    sanitizedExpression = sanitizedExpression.replace(/Math.asin\(/g, `${isDegree ? '180 / Math.PI * ' : ''}Math.asin(`);
-    sanitizedExpression = sanitizedExpression.replace(/Math.acos\(/g, `${isDegree ? '180 / Math.PI * ' : ''}Math.acos(`);
-    sanitizedExpression = sanitizedExpression.replace(/Math.atan\(/g, `${isDegree ? '180 / Math.PI * ' : ''}Math.atan(`);
+    const trigFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan'];
+    trigFunctions.forEach(func => {
+      const regex = new RegExp(`Math.${func}\\(`, 'g');
+      const replacement = state.isDegree && func.length === 3 ? `Math.${func}(Math.PI / 180 * ` :
+                          state.isDegree && func.length === 4 ? `180 / Math.PI * Math.${func}(` :
+                          `Math.${func}(`;
+      sanitizedExpression = sanitizedExpression.replace(regex, replacement);
+    });
     
     const result = new Function('return ' + sanitizedExpression)();
     
@@ -244,7 +170,9 @@ function evaluateExpression() {
     return result < 1 ? parseFloat(result.toFixed(10)) : parseFloat(result.toFixed(2));
   } catch (error) {
     console.error('Calculation error:', error);
-    return 'Error';
+    return error instanceof SyntaxError ? 'Syntax Error' :
+           error instanceof RangeError ? 'Number too large' :
+           error instanceof TypeError ? 'Invalid operation' : 'Error';
   }
 }
 
@@ -252,168 +180,180 @@ function factorial(n) {
   if (n < 0 || !Number.isInteger(n)) {
     throw new Error('Factorial is only defined for non-negative integers');
   }
-  if (n === 0 || n === 1) {
-    return 1;
-  }
-  return n * factorial(n - 1);
+  return n <= 1 ? 1 : n * factorial(n - 1);
 }
 
-function negate() {
-  if (expression === '' && result !== '') {
-    result = -result;
-  } else if (!expression.startsWith('-') && expression !== '') {
-    expression = '-' + expression;
-  } else if (expression.startsWith('-')) {
-    expression = expression.slice(1);
-  }
-  updateDisplay(expression, result);
-}
+// Event handling functions
+function handleKeyPress({ key }) {
+  const keyMappings = {
+    'Enter': 'submit',
+    'Escape': 'clear',
+    'Backspace': 'backspace',
+    '+': 'addition',
+    '-': 'subtraction',
+    '*': 'multiplication',
+    '/': 'division',
+    '^': 'exponent',
+    '%': 'mod',
+    '(': 'parenthesis',
+    ')': 'parenthesis',
+    'p': 'pi',
+    's': 'sin',
+    'c': 'cos',
+    't': 'tan',
+    'l': 'log',
+    'e': 'e'
+  };
 
-function percentage() {
-  if (expression !== '') {
-    result = evaluateExpression();
-    expression = '';
-    if (!isNaN(result) && isFinite(result)) {
-      result /= 100;
-    } else {
-      result = '';
-    }
-  } else if (result !== '') {
-    result = parseFloat(result) / 100;
-  }
-  updateDisplay(expression, result);
-}
+  const button = keyMappings[key] ? 
+    document.querySelector(`button[data-action="${keyMappings[key]}"]`) :
+    (!isNaN(key) || key === '.') ? document.querySelector(`button[data-value="${key}"]`) : null;
 
-function decimal(value) {
-  if (!expression.endsWith('.') && !isNaN(expression.slice(-1))) {
-    addValue(value);
-  }
-}
-
-function handleKeyPress(event) {
-  const key = event.key;
-  const button = document.querySelector(`button[data-value="${key}"]`);
-
-  if (button) {
-    button.click();
-  } else {
-    switch(key) {
-      case 'Enter':
-        document.querySelector('button[data-action="submit"]').click();
-        break;
-      case 'Escape':
-        document.querySelector('button[data-action="clear"]').click();
-        break;
-      case 'Backspace':
-        document.querySelector('button[data-action="backspace"]').click();
-        break;
-    }
-  }
+  button?.click();
 }
 
 // Theme toggle functionality
 function toggleTheme() {
-  body.classList.toggle('light-theme');
-  const isLightTheme = body.classList.contains('light-theme');
-  themeToggle.innerHTML = isLightTheme ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+  elements.body.classList.toggle('light-theme');
+  const isLightTheme = elements.body.classList.contains('light-theme');
+  elements.themeToggle.querySelector('i').className = isLightTheme ? 'fas fa-moon' : 'fas fa-sun';
   localStorage.setItem('theme', isLightTheme ? 'light' : 'dark');
 }
 
 // Scientific calculator functions
-function addPi() {
-  addValue(Math.PI.toFixed(10));
-}
-
-function addSqrt() {
-  if (!isNaN(expression.slice(-1)) && expression.slice(-1) !== '') {
-    expression += '*';
+const addPi = () => addValue(Math.PI.toFixed(10));
+const addSqrt = () => {
+  if (!isNaN(state.expression.slice(-1)) && state.expression.slice(-1) !== '') {
+    state.expression += '*';
   }
-  expression += '√';
-  updateDisplay(expression, '');
-}
-
-function addFactorial() {
-  addValue('!');
-}
+  state.expression += '√';
+  updateDisplay();
+};
+const addFactorial = () => addValue('!');
 
 function needsClosingParenthesis() {
-  let openCount = 0;
-  for (let char of expression) {
-    if (char === '(') openCount++;
-    if (char === ')') openCount--;
-  }
-  return openCount > 0;
+  return (state.expression.match(/\(/g) || []).length > (state.expression.match(/\)/g) || []).length;
 }
 
 function addParenthesis() {
   if (needsClosingParenthesis()) {
-    expression += ')';
-    openParentheses--;
+    state.expression += ')';
+    state.openParentheses--;
   } else {
-    if (!isNaN(expression.slice(-1)) && expression.slice(-1) !== '') {
-      expression += '*';
+    if (!isNaN(state.expression.slice(-1)) && state.expression.slice(-1) !== '') {
+      state.expression += '*';
     }
-    expression += '(';
-    openParentheses++;
+    state.expression += '(';
+    state.openParentheses++;
   }
-  updateDisplay(expression, '');
+  updateDisplay();
+  updateParenthesisButton();
 }
 
 function toggleDegRad() {
-  isDegree = !isDegree;
-  document.querySelector('button[data-action="deg"]').textContent = isDegree ? 'DEG' : 'RAD';
+  state.isDegree = !state.isDegree;
+  const degButton = document.querySelector('button[data-action="deg"]');
+  degButton.innerHTML = `<i class="fas fa-sync-alt"></i> ${state.isDegree ? 'DEG' : 'RAD'}`;
 }
 
 function toggleInverse() {
-  isInverse = !isInverse;
-  document.querySelector('button[data-action="sin"]').textContent = isInverse ? 'asin' : 'sin';
-  document.querySelector('button[data-action="cos"]').textContent = isInverse ? 'acos' : 'cos';
-  document.querySelector('button[data-action="tan"]').textContent = isInverse ? 'atan' : 'tan';
-  document.querySelector('button[data-action="ln"]').textContent = isInverse ? 'exp' : 'ln';
-  document.querySelector('button[data-action="log"]').textContent = isInverse ? '10^x' : 'log';
+  state.isInverse = !state.isInverse;
+  const invButton = document.querySelector('button[data-action="inv"]');
+  invButton.classList.toggle('active', state.isInverse);
+  ['sin', 'cos', 'tan', 'ln', 'log'].forEach(func => {
+    const button = document.querySelector(`button[data-action="${func}"]`);
+    const inverseMap = {
+      sin: 'asin', cos: 'acos', tan: 'atan', ln: 'exp', log: '10^x'
+    };
+    button.innerHTML = `<i class="fa-solid fa-function"></i> ${state.isInverse ? inverseMap[func] : func}`;
+  });
 }
 
-function trigonometry(func) {
-  const inverse = isInverse ? 'a' : '';
-  addFunction(`Math.${inverse}${func}`);
-}
+const trigonometry = (func) => {
+  addFunction(`Math.${state.isInverse ? 'a' : ''}${func}`);
+  updateButtonIcon(func, func);
+};
 
 function addFunction(func) {
-  if (!isNaN(expression.slice(-1)) && expression.slice(-1) !== '') {
-    expression += '*';
+  if (!isNaN(state.expression.slice(-1)) && state.expression.slice(-1) !== '') {
+    state.expression += '*';
   }
-  expression += `${func}(`;
-  openParentheses++;
-  updateDisplay(expression, '');
+  state.expression += `${func}(`;
+  state.openParentheses++;
+  updateDisplay();
+  updateButtonIcon(func.toLowerCase().replace('math.', ''), 'function');
 }
 
 function toggleScientific() {
-  scientificButtons.classList.toggle('visible');
-  toggleScientificBtn.textContent = scientificButtons.classList.contains('visible') ? 'Basic' : 'Scientific';
+  elements.scientificButtons.classList.toggle('visible');
+  const isScientific = elements.scientificButtons.classList.contains('visible');
+  elements.toggleScientificBtn.innerHTML = `
+    <i class="fas fa-${isScientific ? 'calculator' : 'flask'}"></i>
+    <span class="toggle-text">${isScientific ? 'Basic' : 'Scientific'}</span>
+  `;
+  
+  // Force a reflow to ensure the transition is applied
+  void elements.scientificButtons.offsetWidth;
 }
 
 // Initialization
-document.addEventListener('DOMContentLoaded', () => {
+function initializeCalculator() {
   const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+  const setTheme = (isDark) => {
+    elements.body.classList.toggle('light-theme', !isDark);
+    elements.themeToggle.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+  };
   
-  if (prefersDarkScheme.matches) {
-    body.classList.remove('light-theme');
-    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-  } else {
-    body.classList.add('light-theme');
-    themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-  }
+  setTheme(prefersDarkScheme.matches);
+  prefersDarkScheme.addListener((e) => setTheme(e.matches));
 
-  prefersDarkScheme.addListener((e) => {
-    if (e.matches) {
-      body.classList.remove('light-theme');
-      themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-    } else {
-      body.classList.add('light-theme');
-      themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+  document.querySelectorAll('.btn').forEach(initializeButtonIcon);
+  updateClearButton();
+  updateParenthesisButton();
+  updateDisplay();
+}
+
+function initializeButtonIcon(btn) {
+  const { action, value } = btn.dataset;
+  if (action) {
+    const iconMap = {
+      clear: 'c', backspace: 'delete-left', negate: 'plus-minus', mod: 'percent',
+      pi: 'p', sqrt: 'square-root-variable', factorial: 'exclamation',
+      parenthesis: 'brackets-round', sin: 'function', cos: 'function',
+      tan: 'function', ln: 'function', log: 'function', e: 'e',
+      inv: 'superscript', deg: 'rotate', addition: 'plus', subtraction: 'minus',
+      multiplication: 'xmark', division: 'divide', submit: 'equals', exponent: 'superscript'
+    };
+    if (iconMap[action]) {
+      btn.innerHTML = `<i class="fa-solid fa-${iconMap[action]}"></i>`;
+      if (['sin', 'cos', 'tan', 'ln', 'log'].includes(action)) {
+        btn.innerHTML += ` ${action.toUpperCase()}`;
+      }
+    } else if (action === 'parenthesis') {
+      btn.innerHTML = '<strong>( )</strong>';
     }
-  });
-});
+  } else if (value) {
+    btn.innerHTML = !isNaN(value) ? `<i class="fa-solid fa-${value}"></i>` :
+                    value === '.' ? '<i class="fa-solid fa-circle"></i>' : value;
+  }
+}
 
-// Initial display update
-updateDisplay(expression, result);
+function updateClearButton() {
+  const clearButton = document.querySelector('[data-action="clear"]');
+  if (state.expression.length > 0) {
+    clearButton.innerHTML = 'C';
+    clearButton.setAttribute('aria-label', 'Clear entry');
+  } else {
+    clearButton.innerHTML = '<i class="fas fa-trash"></i>';
+    clearButton.setAttribute('aria-label', 'Clear all');
+  }
+}
+
+function updateParenthesisButton() {
+  const parenthesisButton = document.querySelector('button[data-action="parenthesis"]');
+  parenthesisButton.textContent = needsClosingParenthesis() ? ')' : '(';
+}
+
+function updateButtonIcon(action, icon) {
+  document.querySelector(`button[data-action="${action}"] i`).className = `fas fa-${icon}`;
+}

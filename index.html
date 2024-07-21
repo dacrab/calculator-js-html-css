@@ -1,83 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Advanced Scientific Calculator</title>
-    <link rel="icon" href="https://img.icons8.com/dusk/512/apple-calculator.png" type="image/x-icon">
-    <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="script.js" defer></script>
-  </head>
-  <body>
-    <div id="theme-toggle" role="button" aria-label="Toggle theme">
-      <i class="fas fa-sun"></i>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Scientific Calculator</title>
+  <link rel="icon" href="https://img.icons8.com/dusk/512/apple-calculator.png" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main>
+    <div id="top-controls">
+      <button id="theme-toggle" aria-label="Toggle theme"><i class="fas fa-moon"></i></button>
     </div>
-    <main>
-      <section id="output" aria-live="polite">
-        <div id="history"></div>
-        <div id="current">
-          <div id="expression" aria-label="Expression"></div>
-          <div id="result" aria-label="Result"></div>
-        </div>
-      </section>
-      <section id="input">
-        <!-- Top row -->
+    
+    <section id="output" aria-live="polite">
+      <div id="history"></div>
+      <div id="current">
+        <div id="expression" aria-label="Expression"></div>
+        <div id="result" aria-label="Result"></div>
+      </div>
+    </section>
+    
+    <section id="input">
+      <div class="row">
+        <button class="btn blue" data-action="clear" aria-label="Clear"><i class="fas fa-trash"></i></button>
+        <button class="btn function" data-action="sqrt" data-value="√" aria-label="Square root"><i class="fas fa-square-root-alt"></i></button>
+        <button class="btn function" data-action="factorial" data-value="!" aria-label="Factorial"><i class="fas fa-exclamation"></i></button>
+        <button class="btn function" data-action="parenthesis" aria-label="Parentheses"></button>
+      </div>
+      
+      <div id="scientific-buttons">
         <div class="row">
-          <button class="btn blue" data-action="clear" data-value="AC" aria-label="Clear all">AC</button>
-          <button class="btn function" data-action="sqrt" data-value="√" aria-label="Square root">√</button>
-          <button class="btn function" data-action="factorial" data-value="!" aria-label="Factorial">!</button>
-          <button class="btn function" data-action="parenthesis" data-value="()" aria-label="Parentheses">()</button>
-        </div>
-        <!-- Scientific buttons -->
-        <div id="scientific-buttons" class="hidden">
-          <div class="row">
-            <button class="btn function" data-action="deg" aria-label="Toggle degree/radian">DEG</button>
-            <button class="btn function" data-action="sin" aria-label="Sine">sin</button>
-            <button class="btn function" data-action="cos" aria-label="Cosine">cos</button>
-            <button class="btn function" data-action="tan" aria-label="Tangent">tan</button>
-            <button class="btn function" data-action="inv" aria-label="Inverse function">INV</button>
-          </div>
-          <div class="row">
-            <button class="btn function" data-action="e" aria-label="Euler's number">e</button>
-            <button class="btn function" data-action="ln" aria-label="Natural logarithm">ln</button>
-            <button class="btn function" data-action="log" aria-label="Base 10 logarithm">log</button>
-            <button class="btn function" data-action="pi" data-value="π" aria-label="Pi">π</button>
-          </div>
-        </div>
-        <!-- Main calculator buttons -->
-        <div class="row">
-          <button id="toggle-scientific" class="btn blue" aria-label="Toggle scientific mode">Scientific</button>
-          <button class="btn function" data-action="negate" data-value="C" aria-label="Negate">+/-</button>
-          <button class="btn function" data-action="mod" data-value="%" aria-label="Percentage">%</button>
-          <button class="btn function" data-action="division" data-value="/" aria-label="Divide">/</button>
-          <button class="btn function" data-action="exponent" data-value="^" aria-label="Exponent">^</button>
+          <button class="btn function" data-action="deg" aria-label="Toggle degree/radian"><i class="fas fa-sync-alt"></i> DEG</button>
+          <button class="btn function" data-action="sin" aria-label="Sine">sin</button>
+          <button class="btn function" data-action="cos" aria-label="Cosine">cos</button>
+          <button class="btn function" data-action="tan" aria-label="Tangent">tan</button>
+          <button class="btn function" data-action="inv" aria-label="Inverse function">INV</button>
         </div>
         <div class="row">
-          <button class="btn dark" data-action="number" data-value="7" aria-label="Seven">7</button>
-          <button class="btn dark" data-action="number" data-value="8" aria-label="Eight">8</button>
-          <button class="btn dark" data-action="number" data-value="9" aria-label="Nine">9</button>
-          <button class="btn blue" data-action="multiplication" data-value="*" aria-label="Multiply">&times;</button>
+          <button class="btn function" data-action="e" aria-label="Euler's number">e</button>
+          <button class="btn function" data-action="ln" aria-label="Natural logarithm">ln</button>
+          <button class="btn function" data-action="log" aria-label="Base 10 logarithm">log</button>
+          <button class="btn function" data-action="pi" data-value="π" aria-label="Pi">π</button>
+          <button class="btn function" data-action="exponent" data-value="^" aria-label="Exponent"><i class="fas fa-superscript"></i></button>
         </div>
-        <div class="row">
-          <button class="btn dark" data-action="number" data-value="4" aria-label="Four">4</button>
-          <button class="btn dark" data-action="number" data-value="5" aria-label="Five">5</button>
-          <button class="btn dark" data-action="number" data-value="6" aria-label="Six">6</button>
-          <button class="btn blue" data-action="subtraction" data-value="-" aria-label="Subtract">-</button>
-        </div>
-        <div class="row">
-          <button class="btn dark" data-action="number" data-value="1" aria-label="One">1</button>
-          <button class="btn dark" data-action="number" data-value="2" aria-label="Two">2</button>
-          <button class="btn dark" data-action="number" data-value="3" aria-label="Three">3</button>
-          <button class="btn blue" data-action="addition" data-value="+" aria-label="Add">+</button>
-        </div>
-        <div class="row">
-          <button class="btn dark" data-action="decimal" data-value="." aria-label="Decimal point">.</button>
-          <button class="btn dark" data-action="number" data-value="0" aria-label="Zero">0</button>
-          <button class="btn dark" data-action="backspace" aria-label="Backspace">&#9003;</button>
-          <button class="btn blue" data-action="submit" data-value="=" aria-label="Equals">=</button>
-        </div>
-      </section>
-    </main>
-  </body>
+      </div>
+      
+      <div class="row">
+        <button id="toggle-scientific" class="btn function" aria-label="Toggle scientific mode">
+          <i class="fas fa-flask"></i>
+          <span class="toggle-text">Scientific</span>
+        </button>
+        <button class="btn function" data-action="negate" aria-label="Negate"><i class="fas fa-plus-minus"></i></button>
+        <button class="btn function" data-action="mod" data-value="%" aria-label="Percentage"><i class="fas fa-percentage"></i></button>
+        <button class="btn function" data-action="division" data-value="/" aria-label="Divide"><i class="fas fa-divide"></i></button>
+      </div>
+      
+      <div class="row">
+        <button class="btn dark" data-action="number" data-value="7"><i class="fas fa-7"></i></button>
+        <button class="btn dark" data-action="number" data-value="8"><i class="fas fa-8"></i></button>
+        <button class="btn dark" data-action="number" data-value="9"><i class="fas fa-9"></i></button>
+        <button class="btn blue" data-action="multiplication" data-value="*" aria-label="Multiply"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="row">
+        <button class="btn dark" data-action="number" data-value="4"><i class="fas fa-4"></i></button>
+        <button class="btn dark" data-action="number" data-value="5"><i class="fas fa-5"></i></button>
+        <button class="btn dark" data-action="number" data-value="6"><i class="fas fa-6"></i></button>
+        <button class="btn blue" data-action="subtraction" data-value="-" aria-label="Subtract"><i class="fas fa-minus"></i></button>
+      </div>
+      <div class="row">
+        <button class="btn dark" data-action="number" data-value="1"><i class="fas fa-1"></i></button>
+        <button class="btn dark" data-action="number" data-value="2"><i class="fas fa-2"></i></button>
+        <button class="btn dark" data-action="number" data-value="3"><i class="fas fa-3"></i></button>
+        <button class="btn blue" data-action="addition" data-value="+" aria-label="Add"><i class="fas fa-plus"></i></button>
+      </div>
+      <div class="row">
+        <button class="btn dark" data-action="decimal" data-value="."><i class="fas fa-circle"></i></button>
+        <button class="btn dark" data-action="number" data-value="0"><i class="fas fa-0"></i></button>
+        <button class="btn dark" data-action="backspace" aria-label="Backspace"><i class="fas fa-backspace"></i></button>
+        <button class="btn blue" data-action="submit" data-value="=" aria-label="Equals"><i class="fas fa-equals"></i></button>
+      </div>
+    </section>
+  </main>
+</body>
 </html>
